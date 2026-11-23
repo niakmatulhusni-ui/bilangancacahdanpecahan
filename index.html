@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Misi Antariksa - Kuis Matematika Kelas 4</title>
+<style>
+  :root{
+    --bg1:#0a0e27; --bg2:#1a1f4e; --accent:#ffd54f; --accent2:#5eead4;
+    --planet:#7c9cff; --danger:#ff7eb6; --success:#7CFC9B;
+    --card:rgba(255,255,255,0.08); --border:rgba(255,255,255,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    font-family:'Trebuchet MS','Segoe UI',sans-serif;
+    background:radial-gradient(ellipse at top,#1a1f4e 0%,#0a0e27 60%,#050818 100%);
+    color:#fff; min-height:100vh; overflow-x:hidden; padding:18px;
+  }
+  /* bintang berjatuhan */
+  .stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .stars span{position:absolute;background:#fff;border-radius:50%;opacity:.8;
+    animation:twinkle 3s infinite alternate}
+  @keyframes twinkle{from{opacity:.2}to{opacity:1}}
+  @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)}}
+  .rocket{font-size:clamp(2rem,8vw,3.5rem);display:inline-block;animation:float 3s ease-in-out infinite}
+
+  .wrap{max-width:780px;margin:0 auto;position:relative;z-index:2}
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:clamp(16px,5vw,30px);
+    backdrop-filter:blur(8px); box-shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  h1{font-size:clamp(1.4rem,5vw,2.2rem);text-align:center;
+     background:linear-gradient(90deg,var(--accent),var(--accent2));
+     -webkit-background-clip:text;background-clip:text;color:transparent;
+     margin-bottom:10px;font-weight:800;letter-spacing:.5px}
+  .subtitle{text-align:center;color:#cfd6ff;font-size:clamp(.85rem,3vw,1.05rem);margin-bottom:18px}
+
+  label{display:block;font-size:.95rem;color:#cfd6ff;margin:10px 0 4px;font-weight:600}
+  input[type=text],input[type=number]{
+    width:100%;padding:12px 14px;border-radius:12px;border:2px solid var(--border);
+    background:rgba(0,0,0,.25);color:#fff;font-size:1rem;outline:none;transition:.2s}
+  input[type=text]:focus,input[type=number]:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(94,234,212,.2)}
+
+  .btn{
+    display:inline-block;width:100%;margin-top:18px;padding:14px;
+    border:none;border-radius:14px;font-size:1.05rem;font-weight:700;cursor:pointer;
+    background:linear-gradient(90deg,#5eead4,#7c9cff);color:#08122e;transition:transform .15s, box-shadow .2s;
+    box-shadow:0 6px 20px rgba(94,234,212,.35)
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(94,234,212,.5)}
+  .btn:disabled{background:#444a6b;color:#9aa0c5;cursor:not-allowed;box-shadow:none;transform:none}
+  .btn.ghost{background:transparent;border:2px solid var(--border);color:#cfd6ff;box-shadow:none}
+  .btn.ghost:hover{border-color:var(--accent2);color:#fff}
+
+  .progress{display:flex;gap:6px;margin:8px 0 18px;flex-wrap:wrap}
+  .dot{flex:1;min-width:30px;height:8px;border-radius:5px;background:rgba(255,255,255,.15);transition:.3s}
+  .dot.done{background:var(--success)}
+  .dot.current{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+
+  .planet-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(124,156,255,.18);
+    border:1px solid rgba(124,156,255,.4);padding:6px 14px;border-radius:30px;font-size:.9rem;color:#cfe0ff;margin-bottom:10px}
+  .qnum{font-size:clamp(1.1rem,4vw,1.5rem);font-weight:800;color:var(--accent);margin-bottom:6px}
+  .qtext{font-size:clamp(1rem,3.5vw,1.18rem);line-height:1.55;margin-bottom:18px;color:#eaf0ff}
+
+  /* pilihan ganda */
+  .opts{display:grid;gap:10px}
+  .opt{
+    padding:14px 16px;border-radius:14px;border:2px solid var(--border);background:rgba(0,0,0,.2);
+    color:#fff;cursor:pointer;font-size:1rem;transition:.2s;display:flex;align-items:center;gap:10px
+  }
+  .opt:hover{border-color:var(--accent2);background:rgba(94,234,212,.1)}
+  .opt.sel{border-color:var(--accent);background:rgba(255,213,79,.15)}
+  .opt .badge{width:30px;height:30px;border-radius:50%;background:var(--planet);color:#08122e;
+    font-weight:800;display:grid;place-items:center;flex-shrink:0}
+  .opt.correct{border-color:var(--success);background:rgba(124,252,155,.18)}
+  .opt.wrong{border-color:var(--danger);background:rgba(255,126,182,.18)}
+
+  /* urutan */
+  .sort-pool{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .sort-chip{padding:12px 18px;border-radius:12px;background:rgba(124,156,255,.2);
+    border:2px solid rgba(124,156,255,.4);cursor:pointer;font-size:1.1rem;font-weight:700;transition:.2s;user-select:none}
+  .sort-chip:hover{background:rgba(124,156,255,.35)}
+  .sort-chip.picked{opacity:.35;cursor:default}
+  .sort-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .sort-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
+    background:rgba(0,0,0,.25);border:2px dashed var(--border)}
+  .sort-row .pos{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#08122e;
+    font-weight:800;display:grid;place-items:center;flex-shrink:0}
+  .sort-row .chip-inside{flex:1;text-align:center;font-size:1.1rem;font-weight:700}
+  .sort-row .x{background:rgba(255,126,182,.25);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem}
+  .sort-row.empty{opacity:.5;border-style:dashed}
+
+  /* matching */
+  .match-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+  @media(max-width:520px){.match-grid{grid-template-columns:1fr;gap:10px}}
+  .match-col h4{text-align:center;color:#cfd6ff;margin-bottom:8px;font-size:.95rem}
+  .match-item{padding:12px;border-radius:12px;background:rgba(0,0,0,.25);border:2px solid var(--border);
+    text-align:center;cursor:pointer;margin-bottom:8px;font-weight:700;transition:.2s}
+  .match-item:hover{border-color:var(--accent2)}
+  .match-item.sel{border-color:var(--accent);background:rgba(255,213,79,.15)}
+  .match-item.matched{background:rgba(124,252,155,.18);border-color:var(--success);cursor:default;color:#bff5cf}
+  .match-line{height:2px}
+
+  /* benar-salah */
+  .tf-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px;border-radius:14px;background:rgba(0,0,0,.22);border:2px solid var(--border);margin-bottom:10px;flex-wrap:wrap}
+  .tf-row .stmt{flex:1;min-width:180px;font-size:1rem}
+  .tf-btns{display:flex;gap:8px}
+  .tf-btn{padding:8px 16px;border-radius:10px;border:2px solid var(--border);background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-weight:700;font-size:.95rem;transition:.2s}
+  .tf-btn.sel{border-color:var(--accent);background:rgba(255,213,79,.2)}
+  .tf-btn.correct{border-color:var(--success);background:rgba(124,252,155,.25)}
+  .tf-btn.wrong{border-color:var(--danger);background:rgba(255,126,182,.25)}
+
+  .feedback{margin-top:14px;padding:14px 16px;border-radius:14px;font-weight:600;
+    display:none;border:2px solid}
+  .feedback.show{display:block;animation:pop .3s}
+  @keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+  .feedback.ok{background:rgba(124,252,155,.15);border-color:var(--success);color:#bff5cf}
+  .feedback.no{background:rgba(255,126,182,.15);border-color:var(--danger);color:#ffd0e3}
+  .feedback.info{background:rgba(255,213,79,.15);border-color:var(--accent);color:#ffe9b0}
+
+  .nav{display:flex;gap:10px;margin-top:18px}
+  .nav .btn{margin-top:0}
+
+  .result{display:none;text-align:center}
+  .score-big{font-size:clamp(2.5rem,12vw,4.5rem);font-weight:900;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;
+    background-clip:text;color:transparent;margin:10px 0}
+  .score-stars{font-size:1.8rem;margin-bottom:10px;letter-spacing:5px}
+  .result-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:.95rem}
+  .result-table th,.result-table td{padding:10px;border-bottom:1px solid var(--border);text-align:center}
+  .result-table th{color:var(--accent2)}
+  .stat{display:inline-block;padding:8px 18px;margin:6px;border-radius:30px;background:rgba(124,156,255,.18);border:1px solid rgba(124,156,255,.4);font-size:.95rem}
+  .hint{font-size:.85rem;color:#9aa8d6;margin-top:6px}
+  .badge-pict{font-size:2rem;display:inline-block;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="wrap">
+  <div class="card">
+    <!-- LAYAR PEMBUKA -->
+    <section id="intro">
+      <div style="text-align:center"><span class="rocket">🚀</span></div>
+      <h1>Misi Antariksa Matematika</h1>
+      <p class="subtitle">Petualangan Menjelajah 7 Planet untuk Siswa Kelas 4 🪐<br>Jawab setiap misi dengan benar untuk melanjutkan perjalanan!</p>
+
+      <div style="max-width:420px;margin:14px auto 0">
+        <label for="nama">👦👧 Nama Astronot</label>
+        <input type="text" id="nama" placeholder="Tulis nama kamu di sini" autocomplete="off">
+        <label for="kelas">🏫 Kelas</label>
+        <input type="text" id="kelas" placeholder="Contoh: 4A" autocomplete="off">
+        <div class="hint">ℹ️ Setiap soal bernilai poin. Kamu boleh mengulang <b>1 kali</b> jika salah, tapi skormu berkurang <b>2 poin</b>. Kamu harus menyelesaikan satu misi dulu sebelum ke misi berikutnya.</div>
+        <button class="btn" id="startBtn">🌟 Mulai Misi!</button>
+      </div>
+    </section>
+
+    <!-- LAYAR KUIS -->
+    <section id="quiz" style="display:none">
+      <div id="identTag" style="text-align:center;color:#cfd6ff;font-size:.9rem;margin-bottom:8px"></div>
+      <div class="progress" id="progress"></div>
+      <div id="questionArea"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="nav">
+        <button class="btn ghost" id="retryBtn" style="display:none">🔄 Coba Lagi (−2 poin)</button>
+        <button class="btn" id="nextBtn" disabled>Lanjut ➜</button>
+      </div>
+    </section>
+
+    <!-- LAYAR HASIL -->
+    <section id="result" class="result" style="display:none">
+      <div style="font-size:3rem">🏆</div>
+      <h1>Misi Selesai!</h1>
+      <div id="identResult" style="color:#cfd6ff;margin-bottom:6px"></div>
+      <div class="score-stars" id="starsResult"></div>
+      <div class="score-big" id="scoreFinal">0</div>
+      <div style="color:#cfd6ff">dari total nilai 100</div>
+      <div style="margin-top:14px">
+        <span class="stat" id="statBenar"></span>
+        <span class="stat" id="statUlang"></span>
+        <span class="stat" id="statRank"></span>
+      </div>
+      <table class="result-table" id="resultTable">
+        <thead><tr><th>Misi</th><th>Planet</th><th>Hasil</th><th>Poin</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="btn" id="restartBtn" style="margin-top:18px">🔁 Ulangi Petualangan</button>
+    </section>
+  </div>
+</div>
+
+<script>
+/* ===== DATA SOAL ===== */
+const QUESTIONS = [
+  {
+    planet:"Merkurius", emoji:"☿️", poin:15, type:"number",
+    cerita:"Di Stasiun Merkurius, astronot Rian mengumpulkan <b>235</b> batu luar angkasa, lalu menemukan <b>3 kantong</b> yang masing-masing berisi <b>24</b> batu. Setelah itu, Rian memberikan <b>198</b> batu kepada temannya. Berapa banyak batu luar angkasa yang sekarang tersisa?",
+    jawaban:"109",
+    pembahasan:"235 + (3 × 24) − 198 = 235 + 72 − 198 = 307 − 198 = <b>109</b>."
+  },
+  {
+    planet:"Venus", emoji:"♀️", poin:15, type:"single",
+    cerita:"Penjaga Venus memiliki <b>24</b> lampu biru dan <b>36</b> lampu merah. Ia ingin membaginya ke dalam beberapa kelompok. Tiap kelompok harus berisi lampu biru dan lampu merah dengan jumlah yang sama banyak, tanpa ada sisa. Berapa <b>banyak kelompok terbanyak</b> yang bisa dibuat?",
+    opts:[
+      {label:"6 kelompok", v:false},
+      {label:"8 kelompok", v:false},
+      {label:"12 kelompok", v:true},
+      {label:"72 kelompok", v:false}
+    ],
+    pembahasan:"Mencari FPB dari 24 dan 36. Faktor 24 = {1,2,3,4,6,8,12,24}, faktor 36 = {1,2,3,4,6,9,12,18,36}. FPB(24,36) = <b>12</b>."
+  },
+  {
+    planet:"Bumi", emoji:"🌍", poin:14, type:"single",
+    cerita:"Planet Bumi punya 2 lautan artifisial. Lautan A terisi <b>1/4</b> bagian, Lautan B terisi <b>1/3</b> bagian. Lautan manakah yang lebih banyak terisi?",
+    opts:[
+      {label:"Lautan A", v:false},
+      {label:"Lautan B", v:true},
+      {label:"Sama banyak", v:false},
+      {label:"Tidak bisa dibandingkan", v:false}
+    ],
+    pembahasan:"Pecahan dengan pembilang sama, penyebut yang lebih kecil bernilai lebih besar. Karena 3 < 4, maka 1/3 > 1/4. Jadi <b>Lautan B</b> lebih banyak."
+  },
+  {
+    planet:"Mars", emoji:"🔴", poin:14, type:"sort",
+    cerita:"Di Planet Mars kamu menemukan 4 asteroid yang berisi mineral pecahan. Urutkan dari <b>terkecil</b> ke <b>terbesar</b>!",
+    items:["3/8","1/8","5/8","2/8"],
+    jawaban:["1/8","2/8","3/8","5/8"],
+    pembahasan:"Penyebut sama (8), jadi urutkan berdasarkan pembilang: 1 < 2 < 3 < 5. Urutan: <b>1/8, 2/8, 3/8, 5/8</b>."
+  },
+  {
+    planet:"Jupiter", emoji:"🪐", poin:14, type:"match",
+    cerita:"Di Jupiter ada 4 panel data pecahan. Pasangkan setiap pecahan dengan <b>desimal</b> yang senilai! (Klik pecahan di kiri, lalu klik desimal yang sesuai di kanan.)",
+    pairs:[
+      {left:"1/2", right:"0,5"},
+      {left:"1/4", right:"0,25"},
+      {left:"3/4", right:"0,75"},
+      {left:"1/5", right:"0,2"}
+    ],
+    pembahasan:"1/2=0,5 ; 1/4=0,25 ; 3/4=0,75 ; 1/5=0,2. Semua pasangan sudah benar."
+  },
+  {
+    planet:"Saturnus", emoji:"🪐", poin:14, type:"number",
+    cerita:"Saturnus punya 2 cincin cahaya yang berputar. Cincin A berputar tiap <b>6 jam</b>, cincin B berputar tiap <b>9 jam</b>. Jika keduanya berputar bersamaan pukul 00:00, setelah berapa <b>jam</b> mereka akan berputar bersamaan lagi?",
+    jawaban:"18",
+    pembahasan:"Mencari KPK dari 6 dan 9. Kelipatan 6: 6,12,<b>18</b>,24... Kelipatan 9: 9,<b>18</b>,27... KPK(6,9) = <b>18</b>."
+  },
+  {
+    planet:"Neptunus", emoji:"🔵", poin:14, type:"tf",
+    cerita:"Di Neptunus, komputer pusat memberikan 3 pernyataan. Tentukan <b>Benar</b> atau <b>Salah</b> untuk setiap pernyataan!",
+    stmts:[
+      {t:"1/2 = 0,5 = 50%", v:true},
+      {t:"0,25 lebih besar dari 1/4", v:false},
+      {t:"30% = 0,3 = 3/10", v:true}
+    ],
+    pembahasan:"(1) 1/2=0,5=50% BENAR. (2) 0,25 = 1/4, jadi 'lebih besar' SALAH. (3) 30%=0,3=3/10 BENAR."
+  }
+];
+
+/* ===== STATE ===== */
+let state = {
+  idx:0, attempt:1, // 1 atau 2
+  selected:null,     // untuk single
+  pickedOrder:[],    // untuk sort
+  matched:[],        // untuk match (index left yg sudah match)
+  leftSel:null,      // match: left aktif
+  tfAns:[],          // untuk tf
+  results:[]         // {planet, poin, retry}
+};
+
+const TOTAL_POIN = QUESTIONS.reduce((s,q)=>s+q.poin,0); // 100
+
+/* ===== BINTANG ===== */
+(function makeStars(){
+  const box = document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s=document.createElement('span');
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    const sz=Math.random()*2+1;
+    s.style.width=sz+'px';s.style.height=sz+'px';
+    s.style.animationDelay=(Math.random()*3)+'s';
+    box.appendChild(s);
+  }
+})();
+
+/* ===== MULAI ===== */
+document.getElementById('startBtn').onclick = function(){
+  const nama = document.getElementById('nama').value.trim();
+  const kelas = document.getElementById('kelas').value.trim();
+  if(!nama){ alert('Isi nama dulu ya, astronot! 🌟'); return; }
+  if(!kelas){ alert('Isi kelas kamu! 🏫'); return; }
+  state.nama = nama; state.kelas = kelas;
+  document.getElementById('identTag').innerText = '🧑‍🚀 '+nama+' • Kelas '+kelas;
+  document.getElementById('intro').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderProgress();
+  renderQuestion();
+};
+
+/* ===== PROGRESS BAR ===== */
+function renderProgress(){
+  const p = document.getElementById('progress');
+  p.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.className='dot';
+    if(state.results[i]) d.classList.add('done');
+    if(i===state.idx) d.classList.add('current');
+    p.appendChild(d);
+  });
+}
+
+/* ===== RENDER SOAL ===== */
+function renderQuestion(){
+  state.attempt=1;
+  state.selected=null;
+  state.pickedOrder=[];
+  state.matched=[];
+  state.leftSel=null;
+  state.tfAns=Array(QUESTIONS[state.idx].stmts?QUESTIONS[state.idx].stmts.length:0).fill(null);
+
+  const q = QUESTIONS[state.idx];
+  const area = document.getElementById('questionArea');
+  let html = `<div class="planet-tag"><span class="badge-pict">${q.emoji}</span> Planet ${q.planet} • Misi ${state.idx+1} dari ${QUESTIONS.length}</div>`;
+  html += `<div class="qnum">Misi ${state.idx+1}</div>`;
+  html += `<div class="qtext">${q.cerita}</div>`;
+
+  if(q.type==='number'){
+    html += `<label for="numAns">Jawaban (tuliskan angkanya):</label>
+      <input type="number" id="numAns" inputmode="numeric" placeholder="Ketik di sini..." autocomplete="off">`;
+  }
+  else if(q.type==='single'){
+    html += `<div class="opts">`;
+    q.opts.forEach((o,i)=>{
+      html += `<div class="opt" data-i="${i}"><span class="badge">${String.fromCharCode(65+i)}</span><span>${o.label}</span></div>`;
+    });
+    html += `</div>`;
+  }
+  else if(q.type==='sort'){
+    html += `<div class="hint">Klik pecahan sesuai urutan dari terkecil ke terbesar. Klik tanda ✕ untuk membatalkan.</div>`;
+    html += `<div class="sort-pool" id="sortPool"></div>`;
+    html += `<div class="sort-list" id="sortList"></div>`;
+  }
+  else if(q.type==='match'){
+    html += `<div class="match-grid"><div class="match-col"><h4>Pecahan</h4><div id="leftCol"></div></div><div class="match-col"><h4>Desimal</h4><div id="rightCol"></div></div></div>`;
+  }
+  else if(q.type==='tf'){
+    q.stmts.forEach((s,i)=>{
+      html += `<div class="tf-row"><div class="stmt">${i+1}. ${s.t}</div>
+        <div class="tf-btns">
+          <button class="tf-btn" data-i="${i}" data-v="true">Benar</button>
+          <button class="tf-btn" data-i="${i}" data-v="false">Salah</button>
+        </div></div>`;
+    });
+  }
+  area.innerHTML = html;
+
+  // bind events
+  if(q.type==='single'){
+    area.querySelectorAll('.opt').forEach(el=>{
+      el.onclick=()=>{
+        if(state.results[state.idx]) return;
+        area.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+        state.selected=parseInt(el.dataset.i);
+      };
+    });
+  }
+  else if(q.type==='sort'){
+    renderSort();
+  }
+  else if(q.type==='match'){
+    renderMatch();
+  }
+  else if(q.type==='tf'){
+    area.querySelectorAll('.tf-btn').forEach(b=>{
+      b.onclick=()=>{
+        const i=parseInt(b.dataset.i), v=b.dataset.v==='true';
+        state.tfAns[i]=v;
+        area.querySelectorAll(`.tf-btn[data-i="${i}"]`).forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+      };
+    });
+  }
+  else if(q.type==='number'){
+    const inp=document.getElementById('numAns');
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ checkAnswer(); }});
+  }
+
+  // reset nav
+  document.getElementById('nextBtn').disabled=true;
+  document.getElementById('retryBtn').style.display='none';
+  hideFeedback();
+}
+
+/* ===== SORT ===== */
+function renderSort(){
+  const q=QUESTIONS[state.idx];
+  const pool=document.getElementById('sortPool');
+  pool.innerHTML='';
+  q.items.forEach((it,i)=>{
+    const used=state.pickedOrder.includes(i);
+    const c=document.createElement('div');
+    c.className='sort-chip'+(used?' picked':'');
+    c.innerText=it;
+    c.onclick=()=>{
+      if(used) return;
+      state.pickedOrder.push(i);
+      renderSort();
+    };
+    pool.appendChild(c);
+  });
+  const list=document.getElementById('sortList');
+  list.innerHTML='';
+  for(let p=0;p<q.items.length;p++){
+    const row=document.createElement('div');
+    row.className='sort-row'+(p>=state.pickedOrder.length?' empty':'');
+    if(p<state.pickedOrder.length){
+      const idx=state.pickedOrder[p];
+      row.innerHTML=`<div class="pos">${p+1}</div><div class="chip-inside">${q.items[idx]}</div><button class="x" data-p="${p}">✕</button>`;
+      row.querySelector('.x').onclick=()=>{
+        state.pickedOrder.splice(p,1);
+        renderSort();
+      };
+    } else {
+      row.innerHTML=`<div class="pos">${p+1}</div><div class="chip-inside" style="opacity:.4">kosong</div><div></div>`;
+    }
+    list.appendChild(row);
+  }
+}
+
+/* ===== MATCH ===== */
+function renderMatch(){
+  const q=QUESTIONS[state.idx];
+  const leftCol=document.getElementById('leftCol');
+  const rightCol=document.getElementById('rightCol');
+  leftCol.innerHTML=''; rightCol.innerHTML='';
+
+  // kiri: pecahan
+  q.pairs.forEach((p,i)=>{
+    const matched=state.matched.includes(i);
+    const el=document.createElement('div');
+    el.className='match-item'+(matched?' matched':'')+(state.leftSel===i?' sel':'');
+    el.dataset.left=i;
+    el.innerText=p.left;
+    el.onclick=()=>{
+      if(matched) return;
+      state.leftSel=i;
+      renderMatch();
+    };
+    leftCol.appendChild(el);
+  });
+  // kanan: desimal (diacak sekali)
+  if(!q._shuffled){
+    q._shuffled=[...q.pairs].map((p,i)=>({...p, idx:i})).sort(()=>Math.random()-0.5);
+  }
+  q._shuffled.forEach((p,i)=>{
+    const matched=state.matched.includes(p.idx);
+    const el=document.createElement('div');
+    el.className='match-item'+(matched?' matched':'');
+    el.dataset.right=p.idx;
+    el.innerText=p.right;
+    el.onclick=()=>{
+      if(matched||state.leftSel===null) return;
+      if(state.leftSel===p.idx){
+        state.matched.push(p.idx);
+        state.leftSel=null;
+      } else {
+        // salah pasangan, reset left selection + tampilkan feedback singkat
+        flashWrong(el);
+        state.leftSel=null;
+      }
+      renderMatch();
+    };
+    rightCol.appendChild(el);
+  });
+}
+function flashWrong(el){
+  el.style.borderColor='var(--danger)';
+  el.style.background='rgba(255,126,182,.2)';
+  setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },350);
+}
+
+/* ===== CEK JAWABAN ===== */
+function checkAnswer(){
+  const q=QUESTIONS[state.idx];
+  let benar=false;
+  if(q.type==='number'){
+    const v=document.getElementById('numAns').value.trim();
+    if(v===''){ alert('Isi jawaban dulu ya! ✏️'); return; }
+    benar = (parseInt(v)===parseInt(q.jawaban));
+  }
+  else if(q.type==='single'){
+    if(state.selected===null){ alert('Pilih satu jawaban dulu! 🪐'); return; }
+    benar = q.opts[state.selected].v;
+  }
+  else if(q.type==='sort'){
+    if(state.pickedOrder.length!==q.items.length){ alert('Urutkan semua pecahan dulu! 📐'); return; }
+    benar = state.pickedOrder.every((idx,p)=> q.items[idx]===q.jawaban[p]);
+  }
+  else if(q.type==='match'){
+    if(state.matched.length!==q.pairs.length){
+      // cek apakah sudah semua terpasang
+      if(state.matched.length<q.pairs.length){ alert('Pasangkan semua dulu! 🔗'); return; }
+    }
+    benar = state.matched.length===q.pairs.length; // match selalu benar karena langsung di-snap
+  }
+  else if(q.type==='tf'){
+    if(state.tfAns.some(a=>a===null)){ alert('Jawab semua pernyataan: Benar/Salah! ⚖️'); return; }
+    benar = q.stmts.every((s,i)=> state.tfAns[i]===s.v);
+  }
+
+  if(benar){
+    // hitung poin
+    let poin = q.poin;
+    if(state.attempt===2) poin = Math.max(0, q.poin-2);
+    state.results[state.idx] = {planet:q.planet, poin:poin, retry:(state.attempt===2), max:q.poin};
+    showFeedback(true);
+    document.getElementById('nextBtn').disabled=false;
+    document.getElementById('retryBtn').style.display='none';
+    // tandai jawaban benar (visual)
+    markAnswer(true);
+  } else {
+    if(state.attempt===1){
+      state.attempt=2;
+      showFeedback(false, true); // salah, masih bisa ulang
+      document.getElementById('retryBtn').style.display='block';
+      markAnswer(false);
+    } else {
+      // habis retry
+      state.results[state.idx] = {planet:q.planet, poin:0, retry:true, max:q.poin, failed:true};
+      showFeedback(false, false); // salah final
+      document.getElementById('nextBtn').disabled=false;
+      document.getElementById('retryBtn').style.display='none';
+      markAnswer(false);
+    }
+  }
+}
+
+/* ===== TANDAI JAWABAN ===== */
+function markAnswer(benar){
+  const q=QUESTIONS[state.idx];
+  if(q.type==='single'){
+    const opts=document.querySelectorAll('.opt');
+    opts.forEach((el,i)=>{
+      if(q.opts[i].v) el.classList.add('correct');
+      else if(i===state.selected && !benar) el.classList.add('wrong');
+      el.style.pointerEvents='none';
+    });
+  }
+  else if(q.type==='sort' && !benar){
+    // tidak disable, untuk retry siswa bisa susun ulang
+  }
+  else if(q.type==='tf' && benar){
+    document.querySelectorAll('.tf-btn').forEach(b=>{
+      const i=parseInt(b.dataset.i), v=b.dataset.v==='true';
+      if(v===q.stmts[i].v) b.classList.add('correct');
+      else if(b.classList.contains('sel')) b.classList.add('wrong');
+    });
+  }
+  else if(q.type==='tf' && !benar && state.attempt===2){
+    document.querySelectorAll('.tf-btn').forEach(b=>{
+      const i=parseInt(b.dataset.i), v=b.dataset.v==='true';
+      if(v===q.stmts[i].v) b.classList.add('correct');
+    });
+  }
+}
+
+/* ===== FEEDBACK ===== */
+function showFeedback(benar, bisaUlang){
+  const fb=document.getElementById('feedback');
+  const q=QUESTIONS[state.idx];
+  const baikBenar = [
+    "Luar biasa, astronot! 🌟 Cahaya bintang untukmu!",
+    "Hebat sekali! 🚀 Kamu menguasai misi ini!",
+    "Keren! 👏 Komando pusat memberi tepuk riang!",
+    "Sempurna! 🪐 Kamu layak lanjut ke planet berikutnya!"
+  ];
+  const baikUlang = [
+    "Mantap! 😎 Setelah mengulang pun kamu berhasil!",
+    "Tidak menyerah, brilian! 🌟",
+    "Sabar membuat hasil, hebat! 👏"
+  ];
+  const salahMsg = [
+    "Belum tepat 🌑 Yuk baca lagi soalnya dengan teliti!",
+    "Hmm, cek lagi perhitunganmu 🔭",
+    "Ayo coba lagi, kamu pasti bisa! 💫"
+  ];
+  if(benar){
+    if(state.attempt===2){
+      fb.innerHTML = `✅ ${baikUlang[Math.floor(Math.random()*baikUlang.length)]}<br><span class="hint">Pembahasan: ${q.pembahasan}</span>`;
+    } else {
+      fb.innerHTML = `✅ ${baikBenar[Math.floor(Math.random()*baikBenar.length)]}<br><span class="hint">Pembahasan: ${q.pembahasan}</span>`;
+    }
+    fb.className='feedback ok show';
+  } else {
+    if(bisaUlang){
+      fb.innerHTML = `🌗 ${salahMsg[Math.floor(Math.random()*salahMsg.length)]}<br><span class="hint">Kamu masih punya 1 kesempatan mengulang. Skor akan berkurang 2 poin jika benar saat mengulang.</span>`;
+      fb.className='feedback no show';
+    } else {
+      fb.innerHTML = `🌑 Belum berhasil kali ini. Jangan menyerah ya! 🌟<br><span class="hint">Pembahasan: ${q.pembahasan}</span>`;
+      fb.className='feedback info show';
+    }
+  }
+}
+function hideFeedback(){
+  const fb=document.getElementById('feedback');
+  fb.className='feedback'; fb.innerHTML='';
+}
+
+/* ===== TOMBOL ===== */
+document.getElementById('retryBtn').onclick = function(){
+  // reset jawaban untuk soal ini, attempt=2
+  document.getElementById('feedback').className='feedback';
+  // untuk tipe yang pakai state, reset sebagian
+  if(QUESTIONS[state.idx].type==='single'){
+    state.selected=null;
+    document.querySelectorAll('.opt').forEach(x=>{x.classList.remove('sel','correct','wrong');x.style.pointerEvents='auto';});
+  }
+  else if(QUESTIONS[state.idx].type==='sort'){
+    state.pickedOrder=[];
+    renderSort();
+  }
+  else if(QUESTIONS[state.idx].type==='match'){
+    state.matched=[]; state.leftSel=null;
+    renderMatch();
+  }
+  else if(QUESTIONS[state.idx].type==='tf'){
+    state.tfAns=Array(QUESTIONS[state.idx].stmts.length).fill(null);
+    document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('sel','correct','wrong'));
+  }
+  else if(QUESTIONS[state.idx].type==='number'){
+    document.getElementById('numAns').value='';
+    document.getElementById('numAns').focus();
+  }
+  document.getElementById('retryBtn').style.display='none';
+  document.getElementById('nextBtn').disabled=true;
+};
+
+// tombol cek jawaban (tambahkan tombol ini secara dinamis)
+const cekBtn=document.createElement('button');
+cekBtn.id='cekBtn'; cekBtn.className='btn'; cekBtn.innerText='✅ Periksa Jawaban';
+cekBtn.style.background='linear-gradient(90deg,#ffd54f,#ffb74d)';
+cekBtn.style.color='#08122e';
+cekBtn.onclick=checkAnswer;
+document.querySelector('.nav').insertBefore(cekBtn, document.getElementById('retryBtn'));
+
+document.getElementById('nextBtn').onclick = function(){
+  if(state.idx < QUESTIONS.length-1){
+    state.idx++;
+    renderProgress();
+    renderQuestion();
+  } else {
+    showResult();
+  }
+};
+
+document.getElementById('restartBtn').onclick = function(){
+  state = {idx:0, attempt:1, selected:null, pickedOrder:[], matched:[], leftSel:null, tfAns:[], results:[]};
+  document.getElementById('result').style.display='none';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('intro').style.display='block';
+  document.getElementById('nama').value=''; document.getElementById('kelas').value='';
+};
+
+/* ===== HASIL ===== */
+function showResult(){
+  let total=0, benar=0, ulang=0;
+  state.results.forEach(r=>{
+    if(r){ total+=r.poin; if(r.poin>0) benar++; if(r.retry) ulang++; }
+  });
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('result').style.display='block';
+  document.getElementById('scoreFinal').innerText=total;
+  document.getElementById('identResult').innerText='🧑‍🚀 '+state.nama+' • Kelas '+state.kelas;
+  document.getElementById('statBenar').innerText='✅ Misi lulus: '+benar+' / '+QUESTIONS.length;
+  document.getElementById('statUlang').innerText='🔄 Pernah mengulang: '+ulang+' soal';
+
+  // bintang
+  const pct=total/TOTAL_POIN;
+  let stars=1;
+  if(pct>=0.9) stars=5; else if(pct>=0.75) stars=4; else if(pct>=0.55) stars=3; else if(pct>=0.35) stars=2;
+  document.getElementById('starsResult').innerText='⭐'.repeat(stars)+'☆'.repeat(5-stars);
+
+  let rank='Lakukan latihan lagi ya! 💪';
+  if(pct>=0.9) rank='Pilot Antariksa Handal! 🚀';
+  else if(pct>=0.75) rank='Astronot Berbakat! 🪐';
+  else if(pct>=0.55) rank='Penjelajah Muda! 🌟';
+  else if(pct>=0.35) rank='Kadet Penuh Semangat! 🌙';
+  document.getElementById('statRank').innerText='🏅 Peringkat: '+rank;
+
+  // tabel
+  const tb=document.querySelector('#resultTable tbody');
+  tb.innerHTML='';
+  QUESTIONS.forEach((q,i)=>{
+    const r=state.results[i];
+    const tr=document.createElement('tr');
+    const status = r?(r.failed?'❌ Gagal':'✅ Benar'+(r.retry?' (ulang)':'')):'—';
+    const poinText = r?r.poin+'/'+r.max:'—';
+    tr.innerHTML=`<td>${i+1}</td><td>${q.emoji} ${q.planet}</td><td>${status}</td><td>${poinText}</td>`;
+    tb.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
